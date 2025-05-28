@@ -1,0 +1,41 @@
+services:
+    mongodb:
+        image: mongo:latest
+        ports:
+            - "27017:27017"
+        volumes:
+            - mongo_data:/data/db
+
+    rabbitmq:
+        image: rabbitmq:management
+        ports:
+            - "5672:5672" # AMQP Protocol
+            - "15672:15672" # UI
+
+    client:
+        build: ./client
+        ports:
+            - "3000:80"
+        depends_on:
+            - rest-service
+        environment:
+            - VITE_REST_API_URL=http://rest-service:8081
+
+    rest-service:
+        build:
+            dockerfile: ./services/rest/Dockerfile
+            context: .
+
+        ports:
+            - "8081:8081"
+        environment:
+            MONGO_URI: mongodb://mongodb:27017
+            MONGO_DB_NAME: pokedex
+            RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
+            LISTEN_ADDR: ":8081"
+        depends_on:
+            - mongodb
+            - rabbitmq
+
+volumes:
+    mongo_data: {}
