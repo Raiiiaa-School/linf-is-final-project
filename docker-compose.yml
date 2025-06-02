@@ -67,9 +67,9 @@ services:
             - mongodb
             - rabbitmq
 
-    grpc-client:
+    soap-service:
         build:
-            dockerfile: ./services/grpc-client/Dockerfile
+            dockerfile: ./services/soap/Dockerfile
             context: .
         ports:
             - "8084:8084"
