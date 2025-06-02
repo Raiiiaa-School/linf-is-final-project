@@ -22,6 +22,7 @@ require (
 	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/rs/cors v1.11.1
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/sosodev/duration v1.2.0 // indirect
 	github.com/streadway/amqp v1.1.0 // indirect

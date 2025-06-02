@@ -17,6 +17,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var (
@@ -51,12 +52,22 @@ func main() {
 	router.Handle("/query", srv)
 	router.Handle("/", playground.Handler("GraphQL playground", "/query"))
 
+	corsMiddleware := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"}, // Be more specific in production, e.g. []string{"http://localhost:3000"}
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type", "Authorization"},
+		AllowCredentials: true,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	})
+
+	handler := corsMiddleware.Handler(router)
+
 	server := &http.Server{
 		Addr:         listenAddr,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      router,
+		Handler:      handler,
 	}
 
 	go func() {
