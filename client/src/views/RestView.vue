@@ -1,22 +1,29 @@
 <template>
   <div>
-    <h2>REST API</h2>
-    <RestPokemonForm @pokemonCreated="refresh" />
+    <RestPokemonForm @pokemonCreated="refreshList" />
     <RestPokemonList :key="reloadKey" />
   </div>
 </template>
 
 <script>
-import RestPokemonForm from '../components/rest/RestPokemonForm.vue'
-import RestPokemonList from '../components/rest/RestPokemonList.vue'
+import RestPokemonForm from '@/components/rest/RestPokemonForm.vue';
+import RestPokemonList from '@/components/rest/RestPokemonList.vue';
 
 export default {
-  components: { RestPokemonForm, RestPokemonList },
-  data: () => ({ reloadKey: 0 }),
+  name: 'RestView',
+  components: {
+    RestPokemonForm,
+    RestPokemonList
+  },
+  data() {
+    return {
+      reloadKey: 0
+    };
+  },
   methods: {
-    refresh() {
-      this.reloadKey++
+    refreshList() {
+      this.reloadKey++;
     }
   }
-}
+};
 </script>
