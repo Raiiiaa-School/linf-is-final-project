@@ -15,6 +15,7 @@ import (
 	"project-is/services/rest/handlers"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 var (
@@ -33,7 +34,11 @@ func main() {
 	disconnectRabbitMQ := connectRabbitMQ()
 	defer disconnectRabbitMQ()
 
+
 	r := mux.NewRouter()
+
+
+
 
 	r.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -55,12 +60,22 @@ func main() {
 	r.HandleFunc("/login", handlers.Login).Methods("POST")
 	r.HandleFunc("/register", handlers.Register).Methods("POST")
 
+	corsMiddleware := cors.New(cors.Options{
+			AllowedOrigins:   []string{"*"},  // Be more specific in production, e.g. []string{"http://localhost:3000"}
+			AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+			AllowedHeaders:   []string{"Content-Type", "Authorization"},
+			AllowCredentials: true,
+			MaxAge:           300, // Maximum value not ignored by any of major browsers
+		})
+
+	handler := corsMiddleware.Handler(r)
+
 	server := &http.Server{
 		Addr:         listenAddr,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		IdleTimeout:  time.Second * 60,
-		Handler:      r,
+		Handler:      handler,
 	}
 
 	// Run server in a goroutine so that it doesn't block other operations
