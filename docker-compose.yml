@@ -36,6 +36,7 @@ services:
         depends_on:
             - mongodb
             - rabbitmq
+
     graphql-service:
         build:
             dockerfile: ./services/graphql/Dockerfile
@@ -47,6 +48,36 @@ services:
             MONGO_DB_NAME: pokedex
             RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
             LISTEN_ADDR: ":8082"
+        depends_on:
+            - mongodb
+            - rabbitmq
+
+    grpc-service:
+        build:
+            dockerfile: ./services/grpc/Dockerfile
+            context: .
+        ports:
+            - "8083:8083"
+        environment:
+            MONGO_URI: mongodb://mongodb:27017
+            MONGO_DB_NAME: pokedex
+            RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
+            LISTEN_ADDR: ":8083"
+        depends_on:
+            - mongodb
+            - rabbitmq
+
+    grpc-client:
+        build:
+            dockerfile: ./services/grpc-client/Dockerfile
+            context: .
+        ports:
+            - "8084:8084"
+        environment:
+            MONGO_URI: mongodb://mongodb:27017
+            MONGO_DB_NAME: pokedex
+            RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672/
+            LISTEN_ADDR: ":8084"
         depends_on:
             - mongodb
             - rabbitmq

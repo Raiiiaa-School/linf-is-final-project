@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package grpc;
+
+option go_package = "project-is/services/grpc/proto";
+
+service PokemonService {
+  rpc CreatePokemon (CreatePokemonRequest) returns (PokemonResponse) {}
+  rpc GetPokemon (GetPokemonRequest) returns (PokemonResponse) {}
+  rpc ListPokemons (ListPokemonsRequest) returns (ListPokemonsResponse) {}
+  rpc UpdatePokemon (UpdatePokemonRequest) returns (PokemonResponse) {}
+  rpc DeletePokemon (DeletePokemonRequest) returns (DeletePokemonResponse) {}
+}
+
+service UserService {
+  rpc CreateUser (CreateUserRequest) returns (UserResponse) {}
+  rpc GetUser (GetUserRequest) returns (UserResponse) {}
+  rpc GetUserByUsername (GetUserByUsernameRequest) returns (UserResponse) {}
+  rpc Login (LoginRequest) returns (LoginResponse) {}
+}
+
+message Pokemon {
+  string id = 1;
+  string name = 2;
+  repeated string type = 3;
+  repeated string abilities = 4;
+  double height = 5;
+  double weight = 6;
+  int32 pokedex_id = 7;
+}
+
+message CreatePokemonRequest {
+  string name = 1;
+  repeated string type = 2;
+  repeated string abilities = 3;
+  double height = 4;
+  double weight = 5;
+  int32 pokedex_id = 6;
+}
+
+message GetPokemonRequest {
+  string id = 1;
+}
+
+message ListPokemonsRequest {
+  // For future pagination support
+  int32 page_size = 1;
+  int32 page_number = 2;
+}
+
+message ListPokemonsResponse {
+  repeated Pokemon pokemons = 1;
+}
+
+message UpdatePokemonRequest {
+  string id = 1;
+  Pokemon pokemon = 2;
+}
+
+message DeletePokemonRequest {
+  string id = 1;
+}
+
+message DeletePokemonResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message PokemonResponse {
+  Pokemon pokemon = 1;
+}
+
+message User {
+  string id = 1;
+  string username = 2;
+  string password = 3; // Should be hashed when stored
+}
+
+message CreateUserRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message GetUserRequest {
+  string id = 1;
+}
+
+message GetUserByUsernameRequest {
+  string username = 1;
+}
+
+message UserResponse {
+  User user = 1;
+}
+
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+}
