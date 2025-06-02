@@ -36,9 +36,9 @@ services:
         depends_on:
             - mongodb
             - rabbitmq
-    soap-service:
+    graphql-service:
         build:
-            dockerfile: ./services/soap/Dockerfile
+            dockerfile: ./services/graphql/Dockerfile
             context: .
         ports:
             - "8082:8082"

@@ -1,0 +1,63 @@
+type Pokemon {
+  id: ID!
+  name: String!
+  type: [String!]!
+  abilities: [String!]!
+  height: Float!
+  weight: Float!
+  pokedexId: Int!
+}
+
+type User {
+  id: ID!
+  username: String!
+}
+
+type AuthResponse {
+  token: String!
+}
+
+input CreatePokemonInput {
+  name: String!
+  type: [String!]!
+  abilities: [String!]!
+  height: Float!
+  weight: Float!
+  pokedexId: Int!
+}
+
+input UpdatePokemonInput {
+  name: String
+  type: [String!]
+  abilities: [String!]
+  height: Float
+  weight: Float
+  pokedexId: Int
+}
+
+input CreateUserInput {
+  username: String!
+  password: String!
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+type Query {
+  pokemons: [Pokemon!]!
+  pokemon(id: ID!): Pokemon
+  user(id: ID!): User
+  userByUsername(username: String!): User
+}
+
+type Mutation {
+  createPokemon(input: CreatePokemonInput!): Pokemon!
+  updatePokemon(id: ID!, input: UpdatePokemonInput!): Pokemon!
+  deletePokemon(id: ID!): Boolean!
+  
+  createUser(input: CreateUserInput!): User!
+  login(input: LoginInput!): AuthResponse!
+  register(input: CreateUserInput!): User!
+}
