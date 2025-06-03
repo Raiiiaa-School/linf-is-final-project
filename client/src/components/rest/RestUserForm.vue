@@ -23,54 +23,49 @@
   </v-card>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      userData: {
-        name: '',
-        password: '',
-      },
-      snackbar: false,
-      snackbarText: '',
-      snackbarColor: ''
-    };
-  },
-  methods: {
-    async handleSubmit() {
-      const baseUrl = import.meta.env.VITE_REST_API_URL;
-      try {
-        const response = await fetch(`${baseUrl}/users`, { // Endpoint para criar utilizador
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(this.userData)
-        });
+<script setup>
+import axios from "axios";
+import { reactive, ref } from "vue";
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Erro: ${response.statusText} - ${errorData.message || 'Erro desconhecido'}`);
-        }
+const userData = reactive({
+  name: "",
+  password: "",
+});
 
-        const createdUser = await response.json();
-        this.showSnackbar(`Utilizador '${createdUser.name}' criado com sucesso!`, 'success');
-        
-        // Limpar formulário
-        this.userData.name = '';
-        this.userData.password = '';
+const snackbar = ref(false);
+const snackbarText = ref("");
+const snackbarColor = ref("");
 
-        this.$emit("actionCompleted"); // Informa o pai que a ação foi concluída
-      } catch (error) {
-        console.error("Erro ao criar utilizador:", error);
-        this.showSnackbar(`Erro ao criar utilizador: ${error.message || error}`, 'error');
-      }
-    },
-    showSnackbar(message, color) {
-      this.snackbarText = message;
-      this.snackbarColor = color;
-      this.snackbar = true;
+function handleSubmit() {
+  createUser();
+}
+
+async function createUser() {
+  try {
+    // CORRIGIDO: Usando process.env.VUE_APP_REST_SERVICE_URL para a base
+    const baseUrl = process.env.VUE_APP_REST_SERVICE_URL;
+    if (!baseUrl) {
+      showSnackbar("Variavel de ambiente VUE_APP_REST_SERVICE_URL não está definida.", "error");
+      return;
     }
+    // CORRIGIDO: Adiciona '/users' à baseUrl
+    const response = await axios.post(`${baseUrl}/users`, userData);
+    console.log("User criado:", response);
+    showSnackbar("Utilizador criado com sucesso!", "success");
+    // Limpar o formulário após a criação bem-sucedida
+    Object.assign(userData, { name: "", password: "" });
+  } catch (error) {
+    showSnackbar(
+      `Erro ao criar User: ${error.response?.data?.message || error.message || error}`,
+      "error"
+    );
+    console.error("Erro ao criar utilizador:", error);
   }
-};
+}
+
+function showSnackbar(message, color) {
+  snackbarText.value = message;
+  snackbarColor.value = color;
+  snackbar.value = true;
+}
 </script>

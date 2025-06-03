@@ -34,79 +34,98 @@
       <div v-else-if="error">{{ error }}</div>
       <div v-else-if="user">
         <h4>Detalhes do Utilizador:</h4>
-        <p><strong>ID:</strong> {{ user.id }}</p>
-        <p><strong>Nome:</strong> {{ user.name }}</p>
-        <p><strong>Password (para fins de teste):</strong> {{ user.password }}</p> 
+        <p><strong>ID:</strong> {{ user._id || user.id }}</p> <p><strong>Nome:</strong> {{ user.name }}</p>
+        <p><strong>Password (para fins de teste):</strong> {{ user.password }}</p>
       </div>
-      <div v-else-if="searched">Nenhum utilizador encontrado com os critérios fornecidos.</div>
+      <div v-else-if="searched && !user">Nenhum utilizador encontrado com os critérios fornecidos.</div>
     </v-card-text>
     <v-snackbar v-model="snackbar" :color="snackbarColor" timeout="3000">{{ snackbarText }}</v-snackbar>
   </v-card>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      searchMode: 'Buscar por ID', // 'Buscar por ID' ou 'Buscar por Username'
-      userId: '',
-      username: '',
-      user: null, // Para armazenar o utilizador encontrado
-      loading: false,
-      error: null,
-      searched: false, // Flag para saber se já foi feita uma busca
-      snackbar: false,
-      snackbarText: '',
-      snackbarColor: ''
-    };
-  },
-  methods: {
-    async handleSearch() {
-      this.loading = true;
-      this.error = null;
-      this.user = null;
-      this.searched = true;
+<script setup>
+import axios from "axios";
+import { ref } from "vue";
 
-      const baseUrl = import.meta.env.VITE_REST_API_URL;
-      let url = '';
+const searchMode = ref('Buscar por ID');
+const userId = ref('');
+const username = ref('');
 
-      if (this.searchMode === 'Buscar por ID') {
-        if (!this.userId) {
-          this.showSnackbar('Por favor, insere o ID do Utilizador.', 'error');
-          this.loading = false;
-          return;
-        }
-        url = `${baseUrl}/users/${this.userId}`;
-      } else if (this.searchMode === 'Buscar por Username') {
-        if (!this.username) {
-          this.showSnackbar('Por favor, insere o Nome de Utilizador.', 'error');
-          this.loading = false;
-          return;
-        }
-        url = `${baseUrl}/users/username/${this.username}`;
-      }
+const loading = ref(false);
+const error = ref(null);
+const user = ref(null);
+const searched = ref(false);
 
-      try {
-        const response = await fetch(url);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Erro: ${response.statusText} - ${errorData.message || 'Utilizador não encontrado.'}`);
-        }
-        this.user = await response.json();
-        this.showSnackbar("Utilizador encontrado com sucesso!", 'success');
-      } catch (error) {
-        console.error("Erro ao buscar utilizador:", error);
-        this.error = `Erro ao buscar utilizador: ${error.message || error}`;
-        this.showSnackbar(`Erro ao buscar utilizador: ${error.message || error}`, 'error');
-      } finally {
-        this.loading = false;
-      }
-    },
-    showSnackbar(message, color) {
-      this.snackbarText = message;
-      this.snackbarColor = color;
-      this.snackbar = true;
+const snackbar = ref(false);
+const snackbarText = ref("");
+const snackbarColor = ref("");
+
+async function handleSearch() {
+  loading.value = true;
+  error.value = null;
+  user.value = null;
+  searched.value = true;
+
+  try {
+    // CORRIGIDO: Agora baseUrl contém APENAS o endereço base do serviço
+    const baseUrl = process.env.VUE_APP_REST_SERVICE_URL;
+
+    if (!baseUrl) {
+      showSnackbar("Variável de ambiente VUE_APP_REST_SERVICE_URL não está definida.", "error");
+      loading.value = false;
+      return;
     }
+
+    let response;
+    if (searchMode.value === 'Buscar por ID') {
+      if (!userId.value) {
+        showSnackbar("Por favor, insira o ID do utilizador.", "warning");
+        loading.value = false;
+        return;
+      }
+      // CORRIGIDO: Adiciona '/users/${userId.value}' à baseUrl
+      response = await axios.get(`${baseUrl}/users/${userId.value}`);
+    } else { // Buscar por Username
+      if (!username.value) {
+        showSnackbar("Por favor, insira o nome de utilizador.", "warning");
+        loading.value = false;
+        return;
+      }
+      // CORRIGIDO: Adiciona '/users?name=' à baseUrl
+      response = await axios.get(`${baseUrl}/users?name=${username.value}`);
+    }
+
+    if (response.status === 200) {
+      const responseData = response.data;
+      user.value = (Array.isArray(responseData) && responseData.length > 0)
+        ? responseData[0]
+        : (responseData && !Array.isArray(responseData) ? responseData : null);
+
+      if (!user.value) {
+        showSnackbar("Nenhum utilizador encontrado.", "info");
+      } else {
+        showSnackbar("Utilizador encontrado com sucesso!", "success");
+      }
+    } else {
+      showSnackbar(`Erro ao buscar utilizador: Status ${response.status}`, "error");
+    }
+  } catch (err) {
+    error.value = `Erro ao buscar utilizador: ${err.message || err}`;
+    console.error("Erro ao buscar utilizador:", err);
+    showSnackbar(`Erro: ${err.response?.data?.message || err.message || 'Erro desconhecido'}`, "error");
+    user.value = null;
+  } finally {
+    loading.value = false;
   }
-};
+}
+
+function showSnackbar(message, color) {
+  snackbarText.value = message;
+  snackbarColor.value = color;
+  snackbar.value = true;
+}
 </script>
+
+<style scoped>
+/* Estilos específicos para o formulário se necessário */
+</style>

@@ -27,16 +27,6 @@ const loading = ref(true);
 const error = ref(null);
 const pokemons = ref([]);
 
-// const headers = [
-//     { title: "ID", key: "id" },
-//     { title: "Nome", key: "name" },
-//     { title: "Pokedex ID", key: "pokedex_id" },
-//     { title: "Altura (m)", key: "height" },
-//     { title: "Peso (kg)", key: "weight" },
-//     { title: "Tipos", key: "type" },
-//     { title: "Habilidades", key: "abilities" },
-// ];
-
 onMounted(async () => {
     loading.value = true;
     error.value = null;
@@ -54,55 +44,6 @@ onMounted(async () => {
     }
 });
 
-// export default {
-//   data() {
-//     return {
-//       pokemons: [],
-//       loading: false,
-//       error: null,
-//       headers: [
-//         { title: 'ID', key: 'id' },
-//         { title: 'Nome', key: 'name' },
-//         { title: 'Pokedex ID', key: 'pokedex_id' },
-//         { title: 'Altura (m)', key: 'height' },
-//         { title: 'Peso (kg)', key: 'weight' },
-//         { title: 'Tipos', key: 'type' },
-//         { title: 'Habilidades', key: 'abilities' },
-//       ],
-//     };
-//   },
-//   computed: {
-//     itemTypeSlotName() {
-//       return 'item.type';
-//     },
-//     itemAbilitiesSlotName() {
-//       return 'item.abilities';
-//     }
-//   },
-//   async mounted() {
-//     await this.fetchPokemons();
-//   },
-//   methods: {
-//     async fetchPokemons() {
-//       this.loading = true;
-//       this.error = null;
-//       try {
-//         const baseUrl = import.meta.env.VITE_REST_API_URL;
-//         const response = await fetch(`${baseUrl}/pokemons`);
-//         if (!response.ok) {
-//           const errorData = await response.json();
-//           throw new Error(`Erro: ${response.statusText} - ${errorData.message || 'Erro desconhecido'}`);
-//         }
-//         this.pokemons = await response.json();
-//       } catch (error) {
-//         console.error("Erro ao buscar pokémons:", error);
-//         this.error = `Erro ao carregar Pokémon: ${error.message || error}`;
-//       } finally {
-//         this.loading = false;
-//       }
-//     }
-//   }
-// };
 </script>
 
 <style>
