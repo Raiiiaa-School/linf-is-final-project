@@ -197,10 +197,10 @@ See the respective documentation files for detailed testing examples.
 - Add WSDL generation and request validation (SOAP).
 - Support real-time updates via subscriptions or streaming.
 - Implement pagination, rate limiting, and metrics collection across services.
-
+  
 ---
 
-**Instructions to Copy**:
-1. Copy the text above (from `# Pokémon and User Management System` to the end).
-2. Paste into a text editor (e.g., VS Code, Notepad) and save as `README.md`.
-3. Place in your project repository or share with your team.
+Trabalho realizado por:
+
+- Rúben Alves | 210100338
+- Rodrigo Ventura | 240001108
