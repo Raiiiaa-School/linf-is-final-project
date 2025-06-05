@@ -13,11 +13,14 @@ import {
     cacheExchange,
     fetchExchange,
 } from "@urql/vue";
+import { createPinia } from "pinia";
 
 const vuetify = createVuetify({
     components,
     directives,
 });
+
+const pinia = createPinia();
 
 const graphqlClient = createClient({
     url: process.env.VUE_APP_GRAPHQL_SERVICE || "http://localhost:8082/query",
@@ -31,5 +34,6 @@ const app = createApp({
     render: () => h(App),
 });
 
+app.use(pinia);
 app.use(vuetify);
 app.mount("#app");

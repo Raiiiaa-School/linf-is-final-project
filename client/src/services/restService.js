@@ -7,7 +7,7 @@ export class RestService extends BaseService {
         return response.data;
     }
 
-    async getPokemons(id) {
+    async getPokemon(id) {
         const response = await axios.get(`${this.baseURL}/pokemons/${id}`);
         return response.data;
     }
@@ -17,7 +17,7 @@ export class RestService extends BaseService {
         return response.data;
     }
 
-    async updatePokemons(id, data) {
+    async updatePokemon(id, data) {
         const response = await axios.put(
             `${this.baseURL}/pokemons/${id}`,
             data
@@ -25,7 +25,7 @@ export class RestService extends BaseService {
         return response.data;
     }
 
-    async deletePokemons(id) {
+    async deletePokemon(id) {
         const response = await axios.delete(`${this.baseURL}/pokemons/${id}`);
         return response.data;
     }
@@ -35,12 +35,12 @@ export class RestService extends BaseService {
         return response.data;
     }
 
-    async getUsers(id) {
+    async getUser(id) {
         const response = await axios.get(`${this.baseURL}/users/${id}`);
         return response.data;
     }
 
-    async createUsers(data) {
+    async createUser(data) {
         const response = await axios.post(`${this.baseURL}/users`, data);
         return response.data;
     }

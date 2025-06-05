@@ -15,32 +15,32 @@ export class BaseService {
     async listPokemons() {
         throw new Error("Method 'listPokemons' not implemented.");
     }
-    async getPokemons(_id) {
+    async getPokemon(_id) {
         throw new Error("Method 'getPokemons' not implemented.");
     }
-    async createPokemons(_data) {
+    async createPokemon(_data) {
         throw new Error("Method 'createPokemons' not implemented.");
     }
-    async updatePokemons(_id, _data) {
+    async updatePokemon(_id, _data) {
         throw new Error("Method 'updatePokemons' not implemented.");
     }
-    async deletePokemons(_id) {
+    async deletePokemon(_id) {
         throw new Error("Method 'deletePokemons' not implemented.");
     }
 
     async listUsers() {
         throw new Error("Method 'listUsers' not implemented.");
     }
-    async getUsers(_id) {
+    async getUser(_id) {
         throw new Error("Method 'getUsers' not implemented.");
     }
-    async createUsers(_data) {
+    async createUser(_data) {
         throw new Error("Method 'createUsers' not implemented.");
     }
-    async updateUsers(_id, _data) {
+    async updateUser(_id, _data) {
         throw new Error("Method 'updateUsers' not implemented.");
     }
-    async deleteUsers(_id) {
+    async deleteUser(_id) {
         throw new Error("Method 'deleteUsers' not implemented.");
     }
 }

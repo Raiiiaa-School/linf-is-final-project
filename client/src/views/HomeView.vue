@@ -13,17 +13,41 @@
     </div>
     <v-data-table
         v-if="selectedObject === OBJECTS_OPTIONS[0]"
+        ref="data-table"
         v-model="selectedItems"
         show-select
         :headers="POKEMONS_HEADERS"
         :items="items"
+        @update:current-items="loadPokemons"
     >
         <template v-slot:top>
             <v-toolbar flat>
                 <v-toolbar-title> Pokemons </v-toolbar-title>
 
-                <v-btn rounded="lg" text="Create" border @click="add"></v-btn>
+                <v-btn
+                    rounded="lg"
+                    text="Create"
+                    border
+                    @click="createPokemon"
+                ></v-btn>
             </v-toolbar>
+        </template>
+
+        <template v-slot:item.actions="{ item }">
+            <div class="d-flex ga-2 justify-end">
+                <v-btn
+                    color="primary"
+                    text="Edit"
+                    @click="editPokemon(item.id)"
+                >
+                </v-btn>
+                <v-btn
+                    color="primary"
+                    text="Delete"
+                    @click="deletePokemon(item.id)"
+                >
+                </v-btn>
+            </div>
         </template>
     </v-data-table>
 
@@ -38,7 +62,12 @@
             <v-toolbar flat>
                 <v-toolbar-title> Pokemons </v-toolbar-title>
 
-                <v-btn rounded="lg" text="Create" border @click="add"></v-btn>
+                <v-btn
+                    rounded="lg"
+                    text="Create"
+                    border
+                    @click="createUser"
+                ></v-btn>
             </v-toolbar>
         </template>
     </v-data-table>
@@ -201,9 +230,17 @@
 <script setup>
 import { useQueryParams } from "@/components/useQueryParams";
 import { RestService } from "@/services/restService";
+import { useMessagesStore } from "@/stores/messages";
 import { onMounted, ref, shallowRef, watch } from "vue";
+import { templateRef } from "vuetify/lib/util";
 
 const { getQueryParam, setQueryParams } = useQueryParams();
+const messages = useMessagesStore();
+
+const options = ref({
+    page: 1,
+    itemsPerPage: 10,
+});
 
 const SERVICES_OPTIONS = ["Rest", "GraphQL", "gRPC", "Soap"];
 const OBJECTS_OPTIONS = ["Pokemons", "Users"];
@@ -216,6 +253,7 @@ const POKEMONS_HEADERS = [
     { title: "Height", value: "height" },
     { title: "Weight", value: "weight" },
     { title: "Pokedex ID", value: "pokedex_id" },
+    { title: "Actions", key: "actions", align: "end", sortable: false },
 ];
 
 const USERS_HEADERS = [
@@ -232,7 +270,10 @@ const DEFAULT_RECORD = {
     weight: 0,
     pokedex_id: 0,
 };
+
 const record = ref(DEFAULT_RECORD);
+
+const dataTableRef = templateRef("data-table");
 
 const pokemonDialog = shallowRef(false);
 const userDialog = shallowRef(false);
@@ -278,11 +319,18 @@ watch(selectedService, (newService) => {
 
 watch(currentService, async (newService) => {
     if (!newService) return;
-    const response = await newService.listPokemons();
-    items.value = response;
+    loadPokemons();
 });
 
-function add() {
+async function loadPokemons() {
+    if (!currentService.value) {
+        return;
+    }
+    const resposnse = await currentService.value.listPokemons();
+    items.value = resposnse;
+}
+
+function createPokemon() {
     isEditing.value = false;
     record.value = DEFAULT_RECORD;
     pokemonDialog.value = true;
@@ -290,11 +338,29 @@ function add() {
 
 function savePokemon() {
     if (isEditing.value) {
-        currentService.value.updatePokemon(record.value);
+        currentService.value.updatePokemon(record.value.id, record.value);
+        messages.add("Pokemon updated successfully!");
     } else {
         currentService.value.createPokemon(record.value);
+        messages.add("Pokemon created successfully!");
     }
     pokemonDialog.value = false;
+}
+
+function editPokemon(id) {
+    isEditing.value = true;
+    pokemonDialog.value = true;
+
+    record.value = {
+        ...DEFAULT_RECORD,
+        ...items.value.find((pokemon) => pokemon.id === id),
+    };
+}
+
+function deletePokemon(id) {
+    currentService.value.deletePokemon(id);
+    items.value = items.value.filter((pokemon) => pokemon.id !== id);
+    messages.add("Pokemon deleted successfully!");
 }
 
 // function edit(id) {
