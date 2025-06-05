@@ -6,8 +6,8 @@ This document outlines the gRPC service implementation for the Pokémon and User
 
 The service is defined in `proto/service.proto` and provides two main services:
 
-- PokemonService: For managing Pokémon data
-- UserService: For user management and authentication
+-   PokemonService: For managing Pokémon data
+-   UserService: For user management and authentication
 
 ### PokemonService Methods
 
@@ -121,10 +121,10 @@ The service is defined in `proto/service.proto` and provides two main services:
 
 ### Prerequisites
 
-- Go 1.24 or later
-- Protocol Buffers compiler (protoc)
-- MongoDB
-- RabbitMQ
+-   Go 1.24 or later
+-   Protocol Buffers compiler (protoc)
+-   MongoDB
+-   RabbitMQ
 
 ### Environment Variables
 
@@ -209,31 +209,31 @@ func main() {
 
 The service uses standard gRPC status codes:
 
-- `INVALID_ARGUMENT`: Invalid input data
-- `NOT_FOUND`: Resource not found
-- `ALREADY_EXISTS`: Duplicate resource (e.g., username)
-- `INTERNAL`: Server-side errors
-- `UNAUTHENTICATED`: Invalid credentials
+-   `INVALID_ARGUMENT`: Invalid input data
+-   `NOT_FOUND`: Resource not found
+-   `ALREADY_EXISTS`: Duplicate resource (e.g., username)
+-   `INTERNAL`: Server-side errors
+-   `UNAUTHENTICATED`: Invalid credentials
 
 ### Events
 
 The service publishes events to RabbitMQ for:
 
-- Pokemon creation
-- Pokemon updates
-- Pokemon deletion
+-   Pokemon creation
+-   Pokemon updates
+-   Pokemon deletion
 
 Events are published to the `pokemon_events` exchange with the following routing keys:
 
-- `pokemon.created`
-- `pokemon.updated`
-- `pokemon.deleted`
+-   `pokemon.created`
+-   `pokemon.updated`
+-   `pokemon.deleted`
 
 ## Security
 
-- Passwords are hashed using bcrypt before storage
-- The service supports JWT-based authentication (placeholder implementation)
-- Transport security should be configured in production using TLS
+-   Passwords are hashed using bcrypt before storage
+-   The service supports JWT-based authentication (placeholder implementation)
+-   Transport security should be configured in production using TLS
 
 ## Docker Support
 
@@ -267,10 +267,10 @@ The gRPC service shares the same MongoDB database and RabbitMQ message broker wi
 
 To test the service, you can use:
 
-- `grpcurl` for manual testing
-- The provided Go client examples
-- Integration tests (to be implemented)
-- Load testing tools like `ghz`
+-   `grpcurl` for manual testing
+-   The provided Go client examples
+-   Integration tests (to be implemented)
+-   Load testing tools like `ghz`
 
 Example using grpcurl:
 
@@ -336,13 +336,13 @@ grpcurl -plaintext -d '{
 
 3. ListPokemons
 
-- Without pagination parameters (server might use defaults or return all):
+-   Without pagination parameters (server might use defaults or return all):
 
 ```bash
 grpcurl -plaintext -d '{}' localhost:8083 grpc.PokemonService/ListPokemons
 ```
 
-- With pagination parameters:
+-   With pagination parameters:
 
 ```bash
 grpcurl -plaintext -d '{

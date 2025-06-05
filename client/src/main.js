@@ -22,9 +22,17 @@ const vuetify = createVuetify({
 
 const pinia = createPinia();
 
-const graphqlClient = createClient({
+export const graphqlClient = createClient({
     url: process.env.VUE_APP_GRAPHQL_SERVICE || "http://localhost:8082/query",
     exchanges: [debugExchange, cacheExchange, fetchExchange],
+    fetchOptions: () => {
+        const token = localStorage.getItem("authToken");
+        return {
+            headers: {
+                Authorization: token ? `Bearer ${token}` : "",
+            },
+        };
+    },
 });
 
 const app = createApp({

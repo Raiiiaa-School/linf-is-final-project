@@ -229,6 +229,7 @@
 
 <script setup>
 import { useQueryParams } from "@/components/useQueryParams";
+import { GraphQLService } from "@/services/graphqlService";
 import { RestService } from "@/services/restService";
 import { SoapService } from "@/services/soapService";
 import { useMessagesStore } from "@/stores/messages";
@@ -269,7 +270,7 @@ const DEFAULT_RECORD = {
     abilities: [],
     height: 0,
     weight: 0,
-    pokedex_id: 0,
+    pokedexId: 0,
 };
 
 const record = ref(DEFAULT_RECORD);
@@ -305,16 +306,16 @@ watch(selectedService, (newService) => {
             currentService.value = new RestService(8081);
             break;
         case "GraphQL":
-            selectedObject.value = OBJECTS_OPTIONS[1];
+            currentService.value = new GraphQLService(8082);
             break;
         case "gRPC":
-            selectedObject.value = OBJECTS_OPTIONS[0];
+            currentService.value = OBJECTS_OPTIONS[0];
             break;
         case "Soap":
             currentService.value = new SoapService(8084);
             break;
         default:
-            selectedObject.value = OBJECTS_OPTIONS[0];
+            currentService.value = OBJECTS_OPTIONS[0];
     }
 });
 
@@ -338,11 +339,20 @@ function createPokemon() {
 }
 
 function savePokemon() {
+    const pokemon = {
+        name: record.value.name,
+        type: record.value.type,
+        abilities: record.value.abilities,
+        height: record.value.height,
+        weight: record.value.weight,
+        pokedexId: record.value.pokedexId,
+    };
+
     if (isEditing.value) {
-        currentService.value.updatePokemon(record.value.id, record.value);
+        currentService.value.updatePokemon(record.value.id, pokemon);
         messages.add("Pokemon updated successfully!");
     } else {
-        currentService.value.createPokemon(record.value);
+        currentService.value.createPokemon(pokemon);
         messages.add("Pokemon created successfully!");
     }
     pokemonDialog.value = false;
