@@ -1,9 +1,9 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+    <div id="app">
+        <HomeView />
+    </div>
 </template>
 
-<script>
-export default { name: 'App' }
+<script setup>
+import HomeView from "./views/HomeView.vue";
 </script>

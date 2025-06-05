@@ -1,222 +1,324 @@
 <template>
-    <div
-        style="
-            padding: 32px;
-            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-            min-height: 100vh;
-        "
-    >
-        <div>
-            <h1 style="font-weight: bold">
-                Bem-vindo ao Gestor de Pokémon e Utilizadores
-            </h1>
-            <p>
-                Escolha o serviço, tipo de objeto e ação para interagir com o
-                backend.
-            </p>
-        </div>
-
-        <v-card class="pa-4" elevation="3" style="margin-top: 24px">
-            <div style="display: flex; gap: 16px">
-                <v-select
-                    v-model="selectedService"
-                    label="Serviço"
-                    :items="['REST', 'SOAP', 'GraphQL', 'GRPC']"
-                    variant="solo-filled"
-                    style="flex: 1"
-                    @update:modelValue="resetSelections"
-                ></v-select>
-
-                <v-select
-                    v-model="selectedType"
-                    label="Tipo"
-                    :items="typeOptions"
-                    variant="solo-filled"
-                    style="flex: 1"
-                    :disabled="!selectedService"
-                    @update:modelValue="resetAction"
-                ></v-select>
-
-                <v-select
-                    v-model="selectedAction"
-                    label="Ação"
-                    :items="actionOptions"
-                    variant="solo-filled"
-                    style="flex: 1"
-                    :disabled="!selectedType"
-                ></v-select>
-            </div>
-        </v-card>
-
-        <div
-            style="
-                margin-top: 32px;
-                min-height: 300px;
-                border: 2px dashed #ccc;
-                border-radius: 8px;
-                padding: 16px;
-            "
-        >
-            <component
-                :is="dynamicComponent"
-                :key="componentKey"
-                @actionCompleted="handleActionCompleted"
-            />
-        </div>
+    <div class="flex">
+        <v-select
+            v-model="selectedService"
+            label="Select"
+            :items="SERVICES_OPTIONS"
+        ></v-select>
+        <v-select
+            v-model="selectedObject"
+            label="Select"
+            :items="OBJECTS_OPTIONS"
+        ></v-select>
     </div>
+    <v-data-table
+        v-if="selectedObject === OBJECTS_OPTIONS[0]"
+        v-model="selectedItems"
+        show-select
+        :headers="POKEMONS_HEADERS"
+        :items="items"
+    >
+        <template v-slot:top>
+            <v-toolbar flat>
+                <v-toolbar-title> Pokemons </v-toolbar-title>
+
+                <v-btn rounded="lg" text="Create" border @click="add"></v-btn>
+            </v-toolbar>
+        </template>
+    </v-data-table>
+
+    <v-data-table
+        v-if="selectedObject === OBJECTS_OPTIONS[1]"
+        v-model="selectedItems"
+        show-select
+        :headers="USERS_HEADERS"
+        :items="items"
+    >
+        <template v-slot:top>
+            <v-toolbar flat>
+                <v-toolbar-title> Pokemons </v-toolbar-title>
+
+                <v-btn rounded="lg" text="Create" border @click="add"></v-btn>
+            </v-toolbar>
+        </template>
+    </v-data-table>
+
+    <v-dialog v-model="pokemonDialog" max-width="1000">
+        <v-card
+            :subtitle="`${isEditing ? 'Update' : 'Create'} your favorite book`"
+            :title="`${isEditing ? 'Edit' : 'Add'} a Book`"
+        >
+            <template v-slot:text>
+                <v-row>
+                    <v-col cols="12">
+                        <v-text-field
+                            v-model="record.name"
+                            label="Name"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-combobox
+                            multiple
+                            chips
+                            clearable
+                            :items="[
+                                'Fire',
+                                'Water',
+                                'Grass',
+                                'Electric',
+                                'Psychic',
+                                'Rock',
+                                'Ground',
+                            ]"
+                            v-model="record.type"
+                            label="Types"
+                        ></v-combobox>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-combobox
+                            multiple
+                            chips
+                            v-model="record.abilities"
+                            :items="[
+                                'Overgrow',
+                                'Blaze',
+                                'Torrent',
+                                'Shield Dust',
+                                'Levitate',
+                                'Static',
+                                'Flame Body',
+                            ]"
+                            label="Abilities"
+                        ></v-combobox>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-number-input
+                            v-model="record.height"
+                            :min="1"
+                            label="Height (cm)"
+                        ></v-number-input>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-number-input
+                            v-model="record.weight"
+                            :min="1"
+                            label="Weight (kg)"
+                        ></v-number-input>
+                    </v-col>
+                </v-row>
+            </template>
+
+            <v-divider></v-divider>
+
+            <v-card-actions class="bg-surface-light">
+                <v-btn
+                    text="Cancel"
+                    variant="plain"
+                    @click="dialog = false"
+                ></v-btn>
+
+                <v-spacer></v-spacer>
+
+                <v-btn text="Save" @click="savePokemon"></v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="userDialog" max-width="500">
+        <v-card
+            :subtitle="`${isEditing ? 'Update' : 'Create'} your favorite book`"
+            :title="`${isEditing ? 'Edit' : 'Add'} a Book`"
+        >
+            <template v-slot:text>
+                <v-row>
+                    <v-col cols="12">
+                        <v-text-field
+                            v-model="record.title"
+                            label="Title"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-text-field
+                            v-model="record.author"
+                            label="Author"
+                        ></v-text-field>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-select
+                            v-model="record.genre"
+                            :items="[
+                                'Fiction',
+                                'Dystopian',
+                                'Non-Fiction',
+                                'Sci-Fi',
+                            ]"
+                            label="Genre"
+                        ></v-select>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-number-input
+                            v-model="record.year"
+                            :max="adapter.getYear(adapter.date())"
+                            :min="1"
+                            label="Year"
+                        ></v-number-input>
+                    </v-col>
+
+                    <v-col cols="12" md="6">
+                        <v-number-input
+                            v-model="record.pages"
+                            :min="1"
+                            label="Pages"
+                        ></v-number-input>
+                    </v-col>
+                </v-row>
+            </template>
+
+            <v-divider></v-divider>
+
+            <v-card-actions class="bg-surface-light">
+                <v-btn
+                    text="Cancel"
+                    variant="plain"
+                    @click="dialog = false"
+                ></v-btn>
+
+                <v-spacer></v-spacer>
+
+                <v-btn text="Save" @click="save"></v-btn>
+            </v-card-actions>
+        </v-card>
+    </v-dialog>
 </template>
 
-<script>
-// Importa os componentes específicos para REST
-import GraphQLPokemonForm from "@/components/graphql/GraphQLPokemonForm.vue";
-import GraphQLPokemonList from "@/components/graphql/GraphQLPokemonList.vue";
-import RestPokemonForm from "@/components/rest/RestPokemonForm.vue";
-import RestPokemonList from "@/components/rest/RestPokemonList.vue";
-import RestUserForm from "@/components/rest/RestUserForm.vue"; // Precisamos criar este
-import RestUserSearch from "@/components/rest/RestUserSearch.vue"; // Precisamos criar este
+<script setup>
+import { useQueryParams } from "@/components/useQueryParams";
+import { RestService } from "@/services/restService";
+import { onMounted, ref, shallowRef, watch } from "vue";
 
-// Outros views/serviços (manter para a estrutura geral)
-// import SoapView from './SoapView.vue';
-// import GraphQLView from './GraphQLView.vue';
-// import GrpcView from './GrpcView.vue';
+const { getQueryParam, setQueryParams } = useQueryParams();
 
-export default {
-    name: "HomeView",
-    components: {
-        RestPokemonForm,
-        RestPokemonList,
-        RestUserForm, // Registra o novo componente
-        RestUserSearch, // Registra o novo componente
+const SERVICES_OPTIONS = ["Rest", "GraphQL", "gRPC", "Soap"];
+const OBJECTS_OPTIONS = ["Pokemons", "Users"];
 
-        GraphQLPokemonList,
-        GraphQLPokemonForm,
-        // SoapView,
-        // GraphQLView,
-        // GrpcView
-    },
-    data() {
-        return {
-            selectedService: null,
-            selectedType: null,
-            selectedAction: null,
-            componentKey: 0, // Para forçar a recriação do componente
+const POKEMONS_HEADERS = [
+    { title: "ID", value: "id" },
+    { title: "Name", value: "name" },
+    { title: "Type", value: "type" },
+    { title: "Abilities", value: "abilities" },
+    { title: "Height", value: "height" },
+    { title: "Weight", value: "weight" },
+    { title: "Pokedex ID", value: "pokedex_id" },
+];
 
-            // Opções de tipo e ação baseadas nos serviços e na documentação
-            serviceOptions: {
-                REST: {
-                    Pokemons: ["Criar", "Listar", "Atualizar", "Eliminar"], // "Atualizar" e "Eliminar" vão precisar de um ID
-                    Utilizadores: [
-                        "Criar",
-                        "Buscar por ID",
-                        "Buscar por Username",
-                    ],
-                },
-                GraphQL: {
-                    Pokemons: ["Criar", "Listar", "Atualizar", "Eliminar"],
-                    Utilizadores: [
-                        "Criar",
-                        "Buscar por ID",
-                        "Buscar por Username",
-                    ],
-                },
-                // 'SOAP': { /* ... */ },
-                // 'GraphQL': { /* ... */ },
-                // 'GRPC': { /* ... */ },
-            },
-        };
-    },
-    computed: {
-        typeOptions() {
-            // Retorna os tipos disponíveis para o serviço selecionado
-            return this.selectedService
-                ? Object.keys(this.serviceOptions[this.selectedService])
-                : [];
-        },
-        actionOptions() {
-            // Retorna as ações disponíveis para o tipo e serviço selecionados
-            if (this.selectedService && this.selectedType) {
-                return (
-                    this.serviceOptions[this.selectedService][
-                        this.selectedType
-                    ] || []
-                );
-            }
-            return [];
-        },
-        dynamicComponent() {
-            // Determina qual componente exibir com base nas seleções
-            if (this.selectedService === "REST") {
-                if (this.selectedType === "Pokemons") {
-                    switch (this.selectedAction) {
-                        case "Criar":
-                        case "Atualizar": // Pode ser o mesmo formulário com lógica condicional
-                        case "Eliminar": // Pode ser um formulário para ID ou uma ação na lista
-                            return "RestPokemonForm"; // Um formulário genérico para criar/editar/deletar
-                        case "Listar":
-                            return "RestPokemonList";
-                    }
-                } else if (this.selectedType === "Utilizadores") {
-                    switch (this.selectedAction) {
-                        case "Criar":
-                            return "RestUserForm";
-                        case "Buscar por ID":
-                        case "Buscar por Username":
-                            return "RestUserSearch";
-                    }
-                }
-            } else if (this.selectedService === "GraphQL") {
-                if (this.selectedType === "Pokemons") {
-                    switch (this.selectedAction) {
-                        case "Criar":
-                        case "Atualizar": // Pode ser o mesmo formulário com lógica condicional
-                        case "Eliminar": // Pode ser um formulário para ID ou uma ação na lista
-                            return "GraphQLPokemonForm"; // Um formulário genérico para criar/editar/deletar
-                        case "Listar":
-                            return "GraphQLPokemonList";
-                    }
-                } else if (this.selectedType === "Utilizadores") {
-                    switch (this.selectedAction) {
-                        case "Criar":
-                            return "GraphQLUserForm"; // Precisamos criar este componente
-                        case "Buscar por ID":
-                        case "Buscar por Username":
-                            return "GraphQLUserSearch"; // Precisamos criar este componente
-                    }
-                }
-            }
-            // Outros serviços (SOAP, GraphQL, GRPC) seriam tratados aqui
-            // if (this.selectedService === 'SOAP') { /* ... */ }
+const USERS_HEADERS = [
+    { title: "ID", value: "id" },
+    { title: "Username", value: "name" },
+];
 
-            // Default message if nothing is selected or no component matches
-            return {
-                template:
-                    '<span style="color: #888;">Selecione um serviço, tipo e ação para ver os dados ou o formulário.</span>',
-            };
-        },
-    },
-    methods: {
-        resetSelections() {
-            // Reseta tipo e ação quando o serviço muda
-            this.selectedType = null;
-            this.selectedAction = null;
-            this.componentKey++; // Recria o componente dinâmico
-        },
-        resetAction() {
-            // Reseta a ação quando o tipo muda
-            this.selectedAction = null;
-            this.componentKey++; // Recria o componente dinâmico
-        },
-        handleActionCompleted() {
-            // Método para ser chamado pelos componentes filhos quando uma ação é concluída
-            // Por exemplo, quando um Pokémon é criado, queremos atualizar a lista.
-            // Poderíamos usar um evento específico ou simplesmente forçar uma atualização.
-            this.componentKey++; // Força a recriação do componente atual (se for o de lista, ele irá buscar os dados novamente)
-            // Ou poderíamos ter uma lógica mais sofisticada para atualizar apenas o que é necessário.
-        },
-    },
+const DEFAULT_RECORD = {
+    id: null,
+    name: "",
+    type: [],
+    abilities: [],
+    height: 0,
+    weight: 0,
+    pokedex_id: 0,
 };
+const record = ref(DEFAULT_RECORD);
+
+const pokemonDialog = shallowRef(false);
+const userDialog = shallowRef(false);
+const isEditing = ref(false);
+
+const selectedService = ref("");
+const selectedObject = ref(OBJECTS_OPTIONS[0]);
+
+const items = ref([]);
+const selectedItems = ref([]);
+
+const currentService = ref(null);
+
+onMounted(() => {
+    const service = getQueryParam("service");
+    if (!service) {
+        selectedService.value = SERVICES_OPTIONS[0];
+    } else {
+        selectedService.value = service;
+    }
+});
+
+watch(selectedService, (newService) => {
+    setQueryParams({ service: newService }, true);
+
+    switch (selectedService.value) {
+        case "Rest":
+            currentService.value = new RestService(8081);
+            break;
+        case "GraphQL":
+            selectedObject.value = OBJECTS_OPTIONS[1];
+            break;
+        case "gRPC":
+            selectedObject.value = OBJECTS_OPTIONS[0];
+            break;
+        case "Soap":
+            selectedObject.value = OBJECTS_OPTIONS[1];
+            break;
+        default:
+            selectedObject.value = OBJECTS_OPTIONS[0];
+    }
+});
+
+watch(currentService, async (newService) => {
+    if (!newService) return;
+    const response = await newService.listPokemons();
+    items.value = response;
+});
+
+function add() {
+    isEditing.value = false;
+    record.value = DEFAULT_RECORD;
+    pokemonDialog.value = true;
+}
+
+function savePokemon() {
+    if (isEditing.value) {
+        currentService.value.updatePokemon(record.value);
+    } else {
+        currentService.value.createPokemon(record.value);
+    }
+    pokemonDialog.value = false;
+}
+
+// function edit(id) {
+//     isEditing.value = true;
+
+//     const found = items.value.find((book) => book.id === id);
+
+//     record.value = {
+//         id: found.id,
+//         name: found.name,
+//         type: found.type,
+//         abilities: found.abilities,
+//         height: found.height,
+//         weight: found.weight,
+//         pokedex_id: found.pokedex_id,
+//     };
+//     pokemonDialog.value = true;
+// }
 </script>
 
 <style scoped>
-/* Adicione estilos específicos para HomeView se necessário */
+.flex {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
 </style>
