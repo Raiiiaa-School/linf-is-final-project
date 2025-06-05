@@ -18,7 +18,6 @@
         show-select
         :headers="POKEMONS_HEADERS"
         :items="items"
-        @update:current-items="loadPokemons"
     >
         <template v-slot:top>
             <v-toolbar flat>
@@ -33,7 +32,7 @@
             </v-toolbar>
         </template>
 
-        <template v-slot:item.actions="{ item }">
+        <template v-slot:item-actions="{ item }">
             <div class="d-flex ga-2 justify-end">
                 <v-btn
                     color="primary"
@@ -234,15 +233,9 @@ import { RestService } from "@/services/restService";
 import { SoapService } from "@/services/soapService";
 import { useMessagesStore } from "@/stores/messages";
 import { onMounted, ref, shallowRef, watch } from "vue";
-import { templateRef } from "vuetify/lib/util";
 
 const { getQueryParam, setQueryParams } = useQueryParams();
 const messages = useMessagesStore();
-
-const options = ref({
-    page: 1,
-    itemsPerPage: 10,
-});
 
 const SERVICES_OPTIONS = ["Rest", "GraphQL", "gRPC", "Soap"];
 const OBJECTS_OPTIONS = ["Pokemons", "Users"];
@@ -274,8 +267,6 @@ const DEFAULT_RECORD = {
 };
 
 const record = ref(DEFAULT_RECORD);
-
-const dataTableRef = templateRef("data-table");
 
 const pokemonDialog = shallowRef(false);
 const userDialog = shallowRef(false);
@@ -321,15 +312,15 @@ watch(selectedService, (newService) => {
 
 watch(currentService, async (newService) => {
     if (!newService) return;
-    loadPokemons();
+    await loadPokemons();
 });
 
 async function loadPokemons() {
     if (!currentService.value) {
         return;
     }
-    const resposnse = await currentService.value.listPokemons();
-    items.value = resposnse;
+    const response = await currentService.value.listPokemons();
+    items.value = response;
 }
 
 function createPokemon() {
@@ -338,7 +329,7 @@ function createPokemon() {
     pokemonDialog.value = true;
 }
 
-function savePokemon() {
+async function savePokemon() {
     const pokemon = {
         name: record.value.name,
         type: record.value.type,
@@ -355,6 +346,8 @@ function savePokemon() {
         currentService.value.createPokemon(pokemon);
         messages.add("Pokemon created successfully!");
     }
+
+    await loadPokemons();
     pokemonDialog.value = false;
 }
 

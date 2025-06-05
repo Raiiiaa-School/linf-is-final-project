@@ -42,6 +42,10 @@ const app = createApp({
     render: () => h(App),
 });
 
+app.config.devtools = false;
+app.config.warnHandler = () => null;
+app.config.errorHandler = () => null;
+
 app.use(pinia);
 app.use(vuetify);
 app.mount("#app");
