@@ -56,7 +56,7 @@ func main() {
 
 	// Pokemon SOAP endpoints
 	http.HandleFunc("/soap/pokemon", handlers.HandlePokemonService)
-	http.HandleFunc("/soap/user", handlers.HandleUserService)
+	// http.HandleFunc("/soap/user", handlers.HandleUserService)
 
 	server := &http.Server{
 		Addr:         listenAddr,

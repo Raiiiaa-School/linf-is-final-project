@@ -230,6 +230,7 @@
 <script setup>
 import { useQueryParams } from "@/components/useQueryParams";
 import { RestService } from "@/services/restService";
+import { SoapService } from "@/services/soapService";
 import { useMessagesStore } from "@/stores/messages";
 import { onMounted, ref, shallowRef, watch } from "vue";
 import { templateRef } from "vuetify/lib/util";
@@ -310,7 +311,7 @@ watch(selectedService, (newService) => {
             selectedObject.value = OBJECTS_OPTIONS[0];
             break;
         case "Soap":
-            selectedObject.value = OBJECTS_OPTIONS[1];
+            currentService.value = new SoapService(8084);
             break;
         default:
             selectedObject.value = OBJECTS_OPTIONS[0];
